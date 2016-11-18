@@ -5,7 +5,7 @@ from flask import Flask, session, jsonify
 app = Flask(__name__)
 
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'moosefeathers')
-app.debug = True
+app.debug = False
 def new_puzzle():
     return {
         'word_so_far': list('______'),
