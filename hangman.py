@@ -1,4 +1,5 @@
 import os
+import random
 from functools import wraps
 from flask import Flask, session, jsonify
 
@@ -6,10 +7,15 @@ app = Flask(__name__)
 
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'moosefeathers')
 app.debug = False
+
+with open('google-10000-english-usa-no-swears-medium.txt') as f:
+    WORDS = [w.strip() for w in f]
+
 def new_puzzle():
+    word = random.choice(WORDS)
     return {
-        'word_so_far': list('______'),
-        'actual_word': 'SNAKES',
+        'word_so_far': list('_' * len(word)),
+        'actual_word': word.upper(),
         'guesses': [],
     }
 
@@ -72,15 +78,18 @@ def make_guess(puzzle, letter):
     session['puzzle'] = puzzle
     return {
         'new_state': hide_word(puzzle),
-        'guess_result': 'found',
+        'guess_result': 'found' if '_' in puzzle['word_so_far'] else 'solved',
         'action': 'guess',
     }
 
 def hide_word(puzzle):
-    return {
+    d = {
         'word_so_far': puzzle['word_so_far'],
         'guesses': puzzle['guesses'],
     }
+    if len(d['guesses']) >= 6:
+        d['actual_word'] = puzzle['actual_word']
+    return d
 
 @app.route('/new_game')
 def new_game():
