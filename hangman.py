@@ -1,7 +1,7 @@
 import os
 import random
 from functools import wraps
-from flask import Flask, session, jsonify
+from flask import Flask, request, session, jsonify
 
 app = Flask(__name__)
 
@@ -35,6 +35,20 @@ def handle_puzzle_error(error):
     response = jsonify(error.to_dict())
     response.status_code = 400
     return response
+
+@app.after_request
+def add_cors(resp):
+    """ Ensure all responses have the CORS headers. This ensures any failures are also accessible
+        by the client. """
+    resp.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin','*')
+    resp.headers['Access-Control-Allow-Credentials'] = 'true'
+    resp.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS, GET'
+    resp.headers['Access-Control-Allow-Headers'] = request.headers.get(
+        'Access-Control-Request-Headers', 'Authorization' )
+    # set low for debugging
+    if app.debug:
+        resp.headers['Access-Control-Max-Age'] = '1'
+    return resp
 
 def game_in_progress(view):
     @wraps(view)
