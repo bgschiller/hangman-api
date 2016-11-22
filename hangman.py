@@ -11,8 +11,8 @@ app.debug = False
 with open('google-10000-english-usa-no-swears-medium.txt') as f:
     WORDS = [w.strip() for w in f]
 
-def new_puzzle():
-    word = random.choice(WORDS)
+def new_puzzle(word=None):
+    word = word or random.choice(WORDS)
     return {
         'word_so_far': list('_' * len(word)),
         'actual_word': word.upper(),
@@ -102,7 +102,8 @@ def hide_word(puzzle):
         'word_so_far': puzzle['word_so_far'],
         'guesses': puzzle['guesses'],
     }
-    if len(d['guesses']) >= 6:
+    if len(d['guesses']) >= 6 or '_' not in d['word_so_far']:
+        # if already solved, or too many guesses
         d['actual_word'] = puzzle['actual_word']
     return d
 
