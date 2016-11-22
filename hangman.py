@@ -65,18 +65,10 @@ def make_guess(puzzle, letter):
         raise PuzzleError(
             'Expected guess to be one letter, received "{}"'.format(letter),
             code='invalid_guess')
-    if letter in puzzle['guesses']:
+    if letter in puzzle['guesses'] or letter in puzzle['word_so_far']:
         raise PuzzleError(
             "You've already guessed that letter!",
             code='already_guessed_letter')
-    if letter.lower() not in puzzle['actual_word'].lower():
-        puzzle['guesses'].append(letter.upper())
-        session['puzzle'] = puzzle
-        return {
-            'new_state': hide_word(puzzle),
-            'guess_result': 'not_found',
-            'action': 'guess',
-        }
     if len(puzzle['guesses']) >= 6:
         raise PuzzleError(
             "You're out of guesses",
@@ -85,6 +77,15 @@ def make_guess(puzzle, letter):
         raise PuzzleError(
             "You've solved the puzzle!",
             code='already_solved')
+
+    if letter.lower() not in puzzle['actual_word'].lower():
+        puzzle['guesses'].append(letter.upper())
+        session['puzzle'] = puzzle
+        return {
+            'new_state': hide_word(puzzle),
+            'guess_result': 'not_found',
+            'action': 'guess',
+        }
     puzzle['word_so_far'] = list(puzzle['word_so_far'])
     for ix, loc in enumerate(puzzle['actual_word']):
         if loc.lower() == letter.lower():
