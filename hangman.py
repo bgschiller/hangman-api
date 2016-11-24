@@ -61,6 +61,7 @@ def game_in_progress(view):
     return check_game_in_progress
 
 def make_guess(puzzle, letter):
+    letter = letter.upper()
     if len(letter) != 1 or not letter.isalpha():
         raise PuzzleError(
             'Expected guess to be one letter, received "{}"'.format(letter),
@@ -80,7 +81,6 @@ def make_guess(puzzle, letter):
 
     if letter.lower() not in puzzle['actual_word'].lower():
         puzzle['guesses'].append(letter.upper())
-        session['puzzle'] = puzzle
         return {
             'new_state': hide_word(puzzle),
             'guess_result': 'not_found',
@@ -90,7 +90,6 @@ def make_guess(puzzle, letter):
     for ix, loc in enumerate(puzzle['actual_word']):
         if loc.lower() == letter.lower():
             puzzle['word_so_far'][ix] = loc
-    session['puzzle'] = puzzle
     return {
         'new_state': hide_word(puzzle),
         'guess_result': 'found' if '_' in puzzle['word_so_far'] else 'solved',
@@ -119,7 +118,9 @@ def new_game():
 @game_in_progress
 def guess(letter):
     puzzle = session['puzzle']
-    return jsonify(**make_guess(puzzle, letter))
+    resp = make_guess(puzzle, letter)
+    session['puzzle'] = puzzle
+    return jsonify(**resp)
 
 
 @app.route('/')
